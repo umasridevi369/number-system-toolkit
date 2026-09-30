@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radix — Number System Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--c1:#ff2d95;--c2:#ff9a3d;--c3:#7b3cff;--c4:#16d5ff;--c5:#a6ff4d;--bg:#f6efff;--panel:rgba(255,255,255,.74);--ink:#1a1240;--mute:#5d4f8f;--line:rgba(120,80,230,.28);--blue:#6a2cf0;--on:linear-gradient(135deg,var(--c1),var(--c3));--off:rgba(110,80,220,.13);--amber:#ff9f0a;--bad:#d6154a;
+--g1:linear-gradient(135deg,var(--c1),var(--c3));--g2:linear-gradient(135deg,var(--c3),#0ea5ff);--g3:linear-gradient(135deg,#0bbf9b,#0ea5ff);--g4:linear-gradient(135deg,#ff7a1a,var(--c1));
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#090521;--panel:rgba(30,18,70,.68);--ink:#f5f0ff;--mute:#b9acf0;--line:rgba(170,140,255,.3);--blue:#67e8ff;--off:rgba(160,130,255,.17);--amber:#ffd23f;--bad:#ff7096}}
+:root[data-theme="dark"]{--bg:#090521;--panel:rgba(30,18,70,.68);--ink:#f5f0ff;--mute:#b9acf0;--line:rgba(170,140,255,.3);--blue:#67e8ff;--off:rgba(160,130,255,.17);--amber:#ffd23f;--bad:#ff7096}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Bricolage Grotesque",system-ui,sans-serif}
+.mono,input,select,output,td,th{font-family:"Spline Sans Mono",ui-monospace,Menlo,monospace}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+nav{display:flex;gap:18px;flex-wrap:wrap;padding:18px 0;font-weight:500}
+nav b{font-size:20px;font-weight:800;margin-right:auto}
+nav a{text-decoration:none;color:var(--mute)}nav a:hover{color:var(--blue)}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.02;font-weight:800;letter-spacing:-.03em;margin:28px 0 10px;max-width:14ch}
+.lede{color:var(--mute);max-width:52ch;margin:0 0 26px;font-size:18px}
+section{margin:0 0 56px}
+h2{font-size:28px;letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+label{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600;color:var(--mute)}
+input,select{font-size:18px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+input.big{font-size:28px;width:min(100%,460px);font-weight:600}
+input[aria-invalid="true"]{border-color:var(--bad)}
+.err{color:var(--bad);min-height:1.5em;margin:6px 0 0;font-size:14px}
+button{font:600 16px "Bricolage Grotesque",sans-serif;padding:10px 16px;border-radius:8px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+button.ghost{background:transparent;color:var(--ink)}
+button:hover{border-color:var(--blue);background:var(--blue);color:#fff}
+.outs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:18px}
+.out{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);position:relative}
+.out small{color:var(--mute);font-weight:600;font-size:13px}
+.out output{display:block;font-size:20px;font-weight:600;word-break:break-all;margin-top:2px}
+.out button{position:absolute;top:8px;right:8px;padding:3px 9px;font-size:12px;background:transparent;color:var(--mute);border-color:var(--line)}
+.bits{display:flex;flex-wrap:wrap;gap:14px 10px;margin-top:8px}
+.nib{display:flex;gap:4px}
+.bit{width:34px;height:44px;padding:0;border-radius:6px;background:var(--off);color:var(--mute);border:0;font:600 18px "Spline Sans Mono",monospace;display:flex;align-items:center;justify-content:center}
+.bit[aria-pressed="true"]{background:var(--on);color:#fff}
+.bit:hover{outline:2px solid var(--amber);background:var(--off);color:var(--ink)}
+.bit[aria-pressed="true"]:hover{background:var(--on);color:#fff}
+.hint{font-size:14px;color:var(--mute);margin:10px 0 0}
+.steps{font-family:"Spline Sans Mono",monospace;font-size:14px;margin:0;padding:0;list-style:none;display:grid;gap:4px;max-height:280px;overflow:auto}
+.steps li{padding:4px 8px;border-left:3px solid var(--blue);background:var(--bg)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.bit{width:26px;height:38px;font-size:15px}}
+.res{font-size:26px;font-weight:600;margin-top:14px;word-break:break-all}
+.tw{overflow-x:auto;max-height:420px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:7px 14px;text-align:right;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:var(--panel);color:var(--mute)}
+tr:hover td{background:var(--off)}
+footer{color:var(--mute);padding:10px 0 40px;font-size:14px}
+
+/* colourful theme layer */
+body{position:relative;background:var(--bg)}
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;
+background:radial-gradient(38% 34% at 15% 20%,color-mix(in srgb,var(--c1) 67%,transparent),transparent 70%),radial-gradient(34% 36% at 85% 12%,color-mix(in srgb,var(--c4) 67%,transparent),transparent 70%),radial-gradient(40% 40% at 75% 80%,color-mix(in srgb,var(--c3) 69%,transparent),transparent 70%),radial-gradient(30% 30% at 20% 85%,color-mix(in srgb,var(--c2) 67%,transparent),transparent 70%),radial-gradient(22% 22% at 50% 50%,color-mix(in srgb,var(--c5) 40%,transparent),transparent 70%);
+animation:drift 28s ease-in-out infinite alternate}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) body::before{opacity:.72}}
+@keyframes drift{from{transform:translate3d(-3%,-2%,0) rotate(0deg) scale(1)}to{transform:translate3d(3%,3%,0) rotate(14deg) scale(1.12)}}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+nav b{background:var(--g1);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav a:hover{color:var(--ink)}
+h1{background:linear-gradient(100deg,var(--c1) 0%,var(--c2) 30%,var(--c3) 62%,var(--c4) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.06em}
+h2{display:inline-block;background:linear-gradient(90deg,var(--ink),var(--ink));-webkit-background-clip:text;background-clip:text}
+h2::after{content:"";display:block;height:5px;width:56px;margin-top:6px;border-radius:3px;background:var(--g1)}
+section:nth-of-type(2n) h2::after{background:var(--g2)}section:nth-of-type(3n) h2::after{background:var(--g3)}section:nth-of-type(4n) h2::after{background:var(--g4)}
+.card{background:var(--panel);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:0 12px 40px -18px rgba(90,40,220,.55)}
+input,select{background:var(--off);border-color:var(--line)}
+input:focus,select:focus{border-color:var(--blue)}
+button{background:var(--g1);border:0;color:#fff}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+button:hover{background:var(--g2);border:0;color:#fff}
+button.ghost:hover{background:var(--g2);border:1.5px solid transparent;color:#fff}
+.out{background:var(--off);border:1px solid var(--line);border-left:6px solid var(--c1)}
+.out:nth-child(4n+2){border-left-color:var(--c2)}.out:nth-child(4n+3){border-left-color:var(--c3)}.out:nth-child(4n){border-left-color:var(--c4)}
+.out button{background:transparent;color:var(--mute);border:1px solid var(--line)}
+.bit{background:var(--off)}
+.nib:nth-child(4n+1) .bit[aria-pressed="true"]{background:linear-gradient(160deg,var(--c1),color-mix(in srgb,var(--c1) 68%,#000))}
+.nib:nth-child(4n+2) .bit[aria-pressed="true"]{background:linear-gradient(160deg,var(--c2),color-mix(in srgb,var(--c2) 68%,#000))}
+.nib:nth-child(4n+3) .bit[aria-pressed="true"]{background:linear-gradient(160deg,color-mix(in srgb,var(--c3) 85%,#fff),color-mix(in srgb,var(--c3) 68%,#000))}
+.nib:nth-child(4n) .bit[aria-pressed="true"]{background:linear-gradient(160deg,var(--c4),color-mix(in srgb,var(--c4) 68%,#000))}
+.bit[aria-pressed="true"]{color:#fff;box-shadow:0 4px 14px -4px currentColor}
+.bit:hover,.bit[aria-pressed="true"]:hover{outline:2px solid var(--amber);color:#fff}
+.bit:not([aria-pressed="true"]):hover{background:var(--off);color:var(--ink)}
+.steps li{background:var(--off);border-left-color:var(--c1)}
+.steps li:nth-child(3n+2){border-left-color:var(--c3)}.steps li:nth-child(3n){border-left-color:var(--c4)}
+.res{background:var(--g1);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tw{background:var(--panel);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+th{background:var(--g1);color:#fff}
+tr:nth-child(even) td{background:var(--off)}
+tr:hover td{background:color-mix(in srgb,var(--c1) 22%,transparent)}
+
+:root[data-mood="sunset"]{--c1:#ff3d5a;--c2:#ff9f1c;--c3:#b5179e;--c4:#ffd23f;--c5:#ff6ec7}
+:root[data-mood="ocean"]{--c1:#0096c7;--c2:#06d6a0;--c3:#3a0ca3;--c4:#48cae4;--c5:#90e0ef}
+:root[data-mood="neon"]{--c1:#ff00e5;--c2:#ff6a00;--c3:#7a00ff;--c4:#00e5ff;--c5:#39ff14}
+.ctl{display:flex;gap:8px;align-items:center}
+.ctl select{font-size:14px;padding:6px 8px}
+.ctl button{padding:6px 12px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav aria-label="Sections"><b>Radix</b><span class="ctl"><select id="mood" aria-label="Colour palette"><option value="aurora">Aurora</option><option value="sunset">Sunset</option><option value="ocean">Ocean</option><option value="neon">Neon</option></select><button id="mode" type="button" class="ghost" aria-label="Switch between light and dark">Dark</button></span><a href="#convert">Convert</a><a href="#work">Working</a><a href="#calc">Calculate</a><a href="#analyze">Operations</a><a href="#roman">Roman</a><a href="#table">Table</a></nav>
+
+<header>
+<h1>Every number, in every base.</h1>
+<p class="lede">Type a number, pick its base, and see it in binary, octal, decimal, hex and any base up to 36. Flip the bits to watch it change.</p>
+</header>
+
+<section id="convert">
+<div class="card">
+<div class="row">
+<label>Number<input id="inp" class="big" value="2026" autocomplete="off" spellcheck="false" aria-describedby="err"></label>
+<label>Its base<select id="from"></select></label>
+<label>Custom base<select id="to"></select></label>
+</div>
+<p class="err" id="err" role="alert"></p>
+<div class="outs" id="outs"></div>
+<h2 style="margin-top:26px;font-size:20px">Bits <span class="mono" id="bw" style="color:var(--mute);font-size:15px"></span></h2>
+<div class="bits" id="bits"></div>
+<p class="hint">Click a bit to flip it. Negative numbers show as two's complement.</p>
+</div>
+</section>
+
+<section id="work">
+<h2>Show the working</h2>
+<p class="sub">How the number is built, step by step.</p>
+<div class="grid2">
+<div class="card"><h3 style="margin:0 0 10px">Divide by <span id="wb">2</span> to convert</h3><ul class="steps" id="divs"></ul></div>
+<div class="card"><h3 style="margin:0 0 10px">Place values in the original</h3><ul class="steps" id="exp"></ul></div>
+</div>
+</section>
+
+<section id="calc">
+<h2>Calculate in any base</h2>
+<p class="sub">Add, subtract, multiply, divide or take a remainder without leaving the base.</p>
+<div class="card">
+<div class="row">
+<label>A<input id="ca" value="1011" autocomplete="off" spellcheck="false" size="10"></label>
+<label>Operation<select id="op"><option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷ (whole)</option><option value="%">mod</option><option value="&">AND</option><option value="|">OR</option><option value="^">XOR</option></select></label>
+<label>B<input id="cb" value="110" autocomplete="off" spellcheck="false" size="10"></label>
+<label>Base<select id="cbase"></select></label>
+</div>
+<p class="err" id="cerr" role="alert"></p>
+<div class="res mono" id="cres"></div>
+<p class="hint" id="cdec"></p>
+</div>
+</section>
+
+<section id="analyze">
+<h2>Conversion operations and number checks</h2>
+<p class="sub">Complements, shifts, digit tricks, palindromes and primes for any whole number.</p>
+<div class="card">
+<div class="row">
+<label>Whole number<input id="an" value="313" autocomplete="off" spellcheck="false" size="14"></label>
+<label>Its base<select id="abase"></select></label>
+<label>Shift by<input id="ash" type="number" min="0" max="64" value="2" style="width:90px"></label>
+</div>
+<p class="err" id="aerr" role="alert"></p>
+<div class="grid2" style="margin-top:6px">
+<div><h3 style="margin:0 0 4px">Conversion operations</h3><div class="outs" id="aops" style="grid-template-columns:1fr;margin-top:8px"></div></div>
+<div><h3 style="margin:0 0 4px">Checks</h3><div class="outs" id="achk" style="grid-template-columns:1fr;margin-top:8px"></div></div>
+</div>
+</div>
+</section>
+
+<section id="roman">
+<h2>Roman numerals</h2>
+<p class="sub">Works both ways, for 1 to 3999.</p>
+<div class="card grid2">
+<div><label>Number<input id="rn" value="1994" inputmode="numeric" autocomplete="off"></label><div class="res mono" id="rnout"></div></div>
+<div><label>Roman numeral<input id="rr" value="MCMXCIV" autocomplete="off" spellcheck="false"></label><div class="res mono" id="rrout"></div></div>
+</div>
+</section>
+
+<section id="table">
+<h2>Quick reference</h2>
+<p class="sub">The first 64 numbers in four bases.</p>
+<div class="tw"><table><thead><tr><th>Decimal</th><th>Binary</th><th>Octal</th><th>Hex</th></tr></thead><tbody id="tb"></tbody></table></div>
+</section>
+
+<footer>Integers of any size are supported. Everything runs in your browser.</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const D="0123456789abcdefghijklmnopqrstuvwxyz";
+function fillSel(el,def){for(let b=2;b<=36;b++){const o=document.createElement("option");o.value=b;o.textContent="Base "+b;if(b===def)o.selected=true;el.appendChild(o)}}
+fillSel($("from"),10);fillSel($("to"),7);fillSel($("cbase"),2);
+
+function parse(s,b){
+  s=s.trim().toLowerCase().replace(/[\s_,]/g,"");
+  let neg=false;if(s[0]==="-"){neg=true;s=s.slice(1)}
+  if(!s)return {err:"Enter a number."};
+  let v=0n;const B=BigInt(b);
+  for(const ch of s){const d=D.indexOf(ch);
+    if(d<0||d>=b)return {err:`"${ch}" is not a valid digit in base ${b}. Use ${D.slice(0,b).toUpperCase().replace(/(.{20}).*/,"$1…")}.`};
+    v=v*B+BigInt(d)}
+  return {v:neg?-v:v};
+}
+const S=(v,b)=>v.toString(b).toUpperCase();
+const grp=(s,n)=>s.replace(new RegExp("\\B(?=(.{"+n+"})+$)","g")," ");
+
+let cur=0n;
+function render(){
+  const b=+$("from").value,t=+$("to").value;
+  const r=parse($("inp").value,b);
+  $("inp").setAttribute("aria-invalid",!!r.err);
+  $("err").textContent=r.err||"";
+  if(r.err)return;
+  cur=r.v;
+  const items=[["Binary (2)",2],["Octal (8)",8],["Decimal (10)",10],["Hexadecimal (16)",16],[`Base ${t}`,t]];
+  $("outs").innerHTML="";
+  items.forEach(([n,base])=>{
+    let txt=S(cur,base);
+    const d=document.createElement("div");d.className="out";
+    d.innerHTML=`<small>${n}</small><output></output><button class="ghost" type="button">Copy</button>`;
+    d.querySelector("output").textContent=base===2?grp(txt.replace("-",""),4).trim().replace(/^/,cur<0n?"-":""):txt;
+    d.querySelector("button").onclick=e=>{try{navigator.clipboard.writeText(txt)}catch(_){}e.target.textContent="Copied";setTimeout(()=>e.target.textContent="Copy",1200)};
+    $("outs").appendChild(d);
+  });
+  renderBits();renderWork(b,t);
+}
+function width(v){for(const w of [8,16,32,64,128,256,512]){const W=1n<<BigInt(w);if(v>=-(W>>1n)&&v<W)return w}return 1024}
+function renderBits(){
+  const w=width(cur),W=1n<<BigInt(w),u=((cur%W)+W)%W;
+  $("bw").textContent=`${w}-bit${cur<0n?", two's complement":""}`;
+  const box=$("bits");box.innerHTML="";
+  for(let n=0;n<w/4;n++){
+    const nib=document.createElement("div");nib.className="nib";
+    for(let k=3;k>=0;k--){
+      const pos=w-1-(n*4+(3-k));
+      const on=(u>>BigInt(pos))&1n;
+      const bt=document.createElement("button");bt.type="button";bt.className="bit";
+      bt.textContent=on?"1":"0";bt.setAttribute("aria-pressed",on===1n);
+      bt.setAttribute("aria-label","Bit "+pos+" is "+(on?1:0));
+      bt.onclick=()=>{
+        let nu=u^(1n<<BigInt(pos));
+        let nv=(cur<0n&&(nu>>BigInt(w-1))&1n)?nu-W:nu;
+        if(cur<0n&&!((nu>>BigInt(w-1))&1n))nv=nu;
+        $("inp").value=S(nv,+$("from").value);render();
+      };
+      nib.appendChild(bt);
+    }
+    box.appendChild(nib);
+  }
+}
+function renderWork(b,t){
+  $("wb").textContent=t;
+  const T=BigInt(t);let n=cur<0n?-cur:cur;const L=$("divs");L.innerHTML="";
+  if(n===0n)L.innerHTML="<li>0 is 0 in every base.</li>";
+  let i=0;
+  while(n>0n&&i<40){const q=n/T,r=n%T;
+    const li=document.createElement("li");li.textContent=`${n} ÷ ${t} = ${q}, remainder ${r}${r>9n?" ("+S(r,t)+")":""}`;L.appendChild(li);n=q;i++}
+  if(n>0n){const li=document.createElement("li");li.textContent="…the number is long, so steps stop here.";L.appendChild(li)}
+  else if(cur!==0n){const li=document.createElement("li");li.style.borderColor="var(--amber)";li.textContent=`Read remainders from last to first: ${cur<0n?"-":""}${S(cur<0n?-cur:cur,t)}`;L.appendChild(li)}
+  const s=$("inp").value.trim().toLowerCase().replace(/[\s_,-]/g,"");
+  const E=$("exp");E.innerHTML="";
+  const ds=[...s];if(ds.length>24){E.innerHTML="<li>Too many digits to list here.</li>";return}
+  let tot=0n;
+  ds.forEach((c,idx)=>{const p=ds.length-1-idx,d=BigInt(D.indexOf(c));const val=d*BigInt(b)**BigInt(p);tot+=val;
+    const li=document.createElement("li");li.textContent=`${c.toUpperCase()} × ${b}^${p} = ${val}`;E.appendChild(li)});
+  const li=document.createElement("li");li.style.borderColor="var(--amber)";li.textContent=`Sum = ${cur<0n?"-":""}${tot}`;E.appendChild(li);
+}
+["inp","from","to"].forEach(id=>$(id).addEventListener("input",render));
+$("from").addEventListener("change",render);
+
+function calc(){
+  const b=+$("cbase").value,a=parse($("ca").value,b),c=parse($("cb").value,b),op=$("op").value;
+  const bad=a.err||c.err;$("cerr").textContent=bad?(a.err?"A: ":"B: ")+bad:"";
+  if(bad){$("cres").textContent="";$("cdec").textContent="";return}
+  let x=a.v,y=c.v,r;
+  if((op==="/"||op==="%")&&y===0n){$("cerr").textContent="B can't be zero for this operation.";$("cres").textContent="";$("cdec").textContent="";return}
+  r=op==="+"?x+y:op==="-"?x-y:op==="*"?x*y:op==="/"?x/y:op==="%"?x%y:op==="&"?x&y:op==="|"?x|y:x^y;
+  $("cres").textContent=`${S(x,b)} ${$("op").selectedOptions[0].text.split(" ")[0]} ${S(y,b)} = ${S(r,b)}`;
+  $("cdec").textContent=`In decimal: ${x} ${op} ${y} = ${r}`;
+}
+["ca","cb","op","cbase"].forEach(id=>$(id).addEventListener("input",calc));
+
+fillSel($("abase"),10);
+function modpow(b,e,m){let r=1n;b%=m;while(e>0n){if(e&1n)r=r*b%m;b=b*b%m;e>>=1n}return r}
+const SP=[2n,3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n,41n];
+function isPrime(n){
+  if(n<2n)return false;
+  for(const p of SP){if(n===p)return true;if(n%p===0n)return false}
+  let d=n-1n,s=0;while(!(d&1n)){d>>=1n;s++}
+  outer:for(const a of SP){let x=modpow(a,d,n);if(x===1n||x===n-1n)continue;
+    for(let i=1;i<s;i++){x=x*x%n;if(x===n-1n)continue outer}return false}
+  return true}
+function factor(n){
+  const f=[];let m=n;
+  for(let p=2n;p*p<=m&&p<1000000n;p+=(p===2n?1n:2n)){let k=0;while(m%p===0n){m/=p;k++}if(k)f.push([p,k])}
+  let note="";
+  if(m>1n){if(isPrime(m))f.push([m,1]);else note=` × (composite part ${m}, too large to split here)`}
+  return f.map(([p,k])=>k>1?`${p}<sup>${k}</sup>`:`${p}`).join(" × ")+note}
+function nextPrime(n){let m=n+1n;for(let i=0;i<20000;i++,m++)if(isPrime(m))return m;return null}
+function prevPrime(n){let m=n-1n;while(m>=2n){if(isPrime(m))return m;m--}return null}
+const rev=s=>[...s].reverse().join("");
+function addRow(box,title,html){const d=document.createElement("div");d.className="out";d.innerHTML=`<small>${title}</small><output>${html}</output>`;box.appendChild(d)}
+function analyze(){
+  const b=+$("abase").value,r=parse($("an").value,b),ops=$("aops"),chk=$("achk");
+  ops.innerHTML="";chk.innerHTML="";
+  const e=r.err||(r.v<0n?"Use a whole number of 0 or more.":"");
+  $("aerr").textContent=e;if(e)return;
+  const v=r.v,w=BigInt(width(v)),W=1n<<w,k=BigInt(Math.max(0,Math.min(64,parseInt($("ash").value,10)||0)));
+  const bin=x=>x.toString(2).padStart(Number(w),"0"),inB=x=>S(x,b);
+  addRow(ops,`One's complement (${w}-bit)`,`${bin((W-1n)^v)}<br><span style="font-size:14px;color:var(--mute)">= ${inB((W-1n)^v)} in base ${b}</span>`);
+  addRow(ops,`Two's complement (${w}-bit)`,`${bin((W-v)%W)}<br><span style="font-size:14px;color:var(--mute)">represents −${inB(v)}</span>`);
+  addRow(ops,`Shift left by ${k}`,`${inB(v<<k)}<br><span style="font-size:14px;color:var(--mute)">${v} × 2<sup>${k}</sup> = ${v<<k}</span>`);
+  addRow(ops,`Shift right by ${k}`,`${inB(v>>k)}<br><span style="font-size:14px;color:var(--mute)">${v} ÷ 2<sup>${k}</sup>, rounded down = ${v>>k}</span>`);
+  const str=S(v,b),rv=rev(str);
+  addRow(ops,"Digits reversed",`${rv}<br><span style="font-size:14px;color:var(--mute)">= ${parseBig(rv,b)} in decimal</span>`);
+  const ds=[...str].reduce((a,c)=>a+BigInt(D.indexOf(c.toLowerCase())),0n);
+  addRow(ops,"Digit sum",`${S(ds,b)}<br><span style="font-size:14px;color:var(--mute)">${ds} in decimal</span>`);
+  const pal=str===rv;
+  addRow(chk,`Palindrome in base ${b}?`,pal?`Yes: ${str} reads the same both ways.`:`No: ${str} reversed is ${rv}.`);
+  const list=[];for(let x=2;x<=36;x++){if(v>=BigInt(x)){const t=S(v,x);if(t===rev(t))list.push(`${x}`)}}
+  addRow(chk,"Palindrome in other bases",list.length?`Bases ${list.join(", ")}`:"None from base 2 to 36 (single-digit cases skipped).");
+  const p=isPrime(v);
+  let body;
+  if(v<2n)body=`${v} is neither prime nor composite.`;
+  else if(p)body=`${v} is prime.${v>(1n<<81n)?" (Probable prime at this size.)":""}`;
+  else body=`${v} is composite = ${factor(v)}`;
+  addRow(chk,"Prime check",body);
+  if(v<(1n<<64n)){const np=nextPrime(v),pp=v>2n?prevPrime(v):null;
+    addRow(chk,"Nearest primes",`${pp===null?"none below":"below: "+pp}, ${np===null?"none found ahead":"above: "+np}`)}
+}
+function parseBig(s,b){let v=0n;for(const c of s)v=v*BigInt(b)+BigInt(D.indexOf(c.toLowerCase()));return v}
+["an","abase","ash"].forEach(id=>$(id).addEventListener("input",analyze));
+
+const RM=[[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
+function toRoman(n){let s="";for(const[v,r]of RM)while(n>=v){s+=r;n-=v}return s}
+function fromRoman(s){s=s.toUpperCase().trim();if(!/^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/.test(s)||!s)return null;
+  let n=0;for(const[v,r]of RM)while(s.startsWith(r)){n+=v;s=s.slice(r.length)}return n}
+$("rn").addEventListener("input",()=>{const n=parseInt($("rn").value,10);$("rnout").textContent=n>=1&&n<=3999?toRoman(n):"Enter a whole number from 1 to 3999."});
+$("rr").addEventListener("input",()=>{const n=fromRoman($("rr").value);$("rrout").textContent=n?String(n):"Enter a valid numeral like XIV."});
+
+const tb=$("tb");for(let i=0;i<64;i++){const tr=document.createElement("tr");tr.innerHTML=`<td>${i}</td><td>${i.toString(2).padStart(6,"0")}</td><td>${i.toString(8)}</td><td>${i.toString(16).toUpperCase()}</td>`;tb.appendChild(tr)}
+
+render();calc();analyze();$("rn").dispatchEvent(new Event("input"));$("rr").dispatchEvent(new Event("input"));
+
+(function(){
+  const R=document.documentElement;let st={};
+  try{st=JSON.parse(localStorage.getItem("radix")||"{}")}catch(_){}
+  const sys=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";
+  let mood=st.mood||"aurora",theme=st.theme||sys;
+  const save=()=>{try{localStorage.setItem("radix",JSON.stringify({mood,theme}))}catch(_){}};
+  const apply=()=>{R.dataset.mood=mood;R.dataset.theme=theme;$("mood").value=mood;$("mode").textContent=theme==="dark"?"Light":"Dark"};
+  $("mood").onchange=e=>{mood=e.target.value;apply();save()};
+  $("mode").onclick=()=>{theme=theme==="dark"?"light":"dark";apply();save()};
+  apply();
+})();
+</script>
+</body>
+</html>
